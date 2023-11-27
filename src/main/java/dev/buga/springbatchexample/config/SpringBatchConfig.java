@@ -1,11 +1,11 @@
 package dev.buga.springbatchexample.config;
 
 import dev.buga.springbatchexample.entity.Dwelling;
+import dev.buga.springbatchexample.entity.DwellingDTO;
 import dev.buga.springbatchexample.repository.DwellingsRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
@@ -29,8 +29,8 @@ public class SpringBatchConfig {
     private DwellingsRepository dwellingsRepository;
 
     @Bean
-    public FlatFileItemReader<Dwelling> reader() {
-        FlatFileItemReader<Dwelling> itemReader = new FlatFileItemReader<>();
+    public FlatFileItemReader<DwellingDTO> reader() {
+        FlatFileItemReader<DwellingDTO> itemReader = new FlatFileItemReader<>();
 
         itemReader.setResource(new FileSystemResource("src/main/resources/dwellings2.csv"));
         itemReader.setName("csvReader");
@@ -40,18 +40,18 @@ public class SpringBatchConfig {
         return itemReader;
     }
 
-    private LineMapper<Dwelling> lineMapper() {
-        DefaultLineMapper<Dwelling> lineMapper = new DefaultLineMapper<>();
+    private LineMapper<DwellingDTO> lineMapper() {
+        DefaultLineMapper<DwellingDTO> lineMapper = new DefaultLineMapper<>();
 
         // extracts the value from the csv file
         DelimitedLineTokenizer delimitedLineTokenizer = new DelimitedLineTokenizer();
         delimitedLineTokenizer.setDelimiter(",");
         delimitedLineTokenizer.setStrict(false);
-        delimitedLineTokenizer.setNames("date", "SA2_code", "SA2_name", "authority", "total_dwellings", "houses", "apartments", "retirement_villas", "townhouses");
+        delimitedLineTokenizer.setNames("date", "SA2Code", "SA2Name", "authority", "totalDwellings", "houses", "apartments", "retirementVillas", "townhouses");
 
         // maps the value to the target class
-        BeanWrapperFieldSetMapper<Dwelling> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
-        fieldSetMapper.setTargetType(Dwelling.class);
+        BeanWrapperFieldSetMapper<DwellingDTO> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
+        fieldSetMapper.setTargetType(DwellingDTO.class);
 
         lineMapper.setLineTokenizer(delimitedLineTokenizer);
         lineMapper.setFieldSetMapper(fieldSetMapper);
@@ -76,7 +76,7 @@ public class SpringBatchConfig {
     @Bean
     public Step step1() {
         return new StepBuilder("csv-step", jobRepository)
-                .<Dwelling, Dwelling>chunk(10, transactionManager)
+                .<DwellingDTO, Dwelling>chunk(10, transactionManager)
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
