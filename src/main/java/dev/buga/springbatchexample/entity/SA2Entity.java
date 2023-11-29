@@ -23,7 +23,6 @@ import lombok.Setter;
 @Setter
 public class SA2Entity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     @Column(name = "SA2_CODE")
     private int SA2_code;

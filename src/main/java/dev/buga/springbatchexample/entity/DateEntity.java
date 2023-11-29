@@ -23,7 +23,6 @@ import lombok.Setter;
 @Setter
 public class DateEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     @Column(name = "MONTH")
     private String date;

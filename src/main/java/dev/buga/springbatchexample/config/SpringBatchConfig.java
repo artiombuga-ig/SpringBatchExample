@@ -5,6 +5,7 @@ import dev.buga.springbatchexample.repository.DateEntityRepository;
 import dev.buga.springbatchexample.repository.DwellingInfoRepository;
 import dev.buga.springbatchexample.repository.DwellingsRepository;
 import dev.buga.springbatchexample.repository.SA2EntityRepository;
+import dev.buga.springbatchexample.utility.DwellingItemWriter;
 import dev.buga.springbatchexample.utility.DwellingProcessor;
 import dev.buga.springbatchexample.utility.DwellingValidator;
 import dev.buga.springbatchexample.utility.FileMoveListener;
@@ -27,6 +28,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import java.util.List;
 
 @Configuration
 @AllArgsConstructor
@@ -81,12 +84,12 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public Step step1(DwellingProcessor processor) {
+    public Step step1(DwellingProcessor processor, DwellingItemWriter dwellingItemWriter) {
         return new StepBuilder("csv-step", jobRepository)
-                .<FieldSet, Dwelling>chunk(50, transactionManager)
+                .<FieldSet, List<Object>>chunk(50, transactionManager)
                 .reader(reader())
                 .processor(processor)
-                .writer(writer())
+                .writer(dwellingItemWriter)
                 .faultTolerant()
                 .skipPolicy((throwable, skipCount) -> {
                     if (throwable instanceof ValidationException) {

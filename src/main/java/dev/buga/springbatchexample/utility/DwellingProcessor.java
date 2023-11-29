@@ -11,21 +11,18 @@ import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.file.transform.FieldSet;
 import org.springframework.batch.item.validator.Validator;
 
-public class DwellingProcessor implements ItemProcessor<FieldSet, Dwelling> {
+import java.util.ArrayList;
+import java.util.List;
+
+public class DwellingProcessor implements ItemProcessor<FieldSet, List<Object>> {
     private final Validator<FieldSet> validator;
-    private final DwellingInfoRepository dwellingInfoRepository;
-    private final DateEntityRepository dateEntityRepository;
-    private final SA2EntityRepository sa2EntityRepository;
 
     public DwellingProcessor(DwellingValidator validator, DwellingInfoRepository dwellingInfoRepository, DateEntityRepository dateEntityRepository, SA2EntityRepository sa2EntityRepository) {
         this.validator = validator;
-        this.dwellingInfoRepository = dwellingInfoRepository;
-        this.dateEntityRepository = dateEntityRepository;
-        this.sa2EntityRepository = sa2EntityRepository;
     }
 
     @Override
-    public Dwelling process(FieldSet fieldSet) {
+    public List<Object> process(FieldSet fieldSet) {
         validator.validate(fieldSet);
 
         Dwelling dwelling = new Dwelling();
@@ -58,10 +55,11 @@ public class DwellingProcessor implements ItemProcessor<FieldSet, Dwelling> {
         dwellingInfo.setTownhouses(townhouses);
         dwellingInfo.setDwelling(dwelling);
 
-        dateEntityRepository.save(dateEntity);
-        sa2EntityRepository.save(sa2Entity);
-        dwellingInfoRepository.save(dwellingInfo);
+        List<Object> entities = new ArrayList<>();
+        entities.add(dateEntity);
+        entities.add(sa2Entity);
+        entities.add(dwellingInfo);
 
-        return dwelling;
+        return entities;
     }
 }

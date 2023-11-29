@@ -23,7 +23,6 @@ import lombok.Setter;
 @Setter
 public class DwellingInfo {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
     @Column(name = "TOTAL_DWELLING_UNITS")
     private int total_dwellings;
