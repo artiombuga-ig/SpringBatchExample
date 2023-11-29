@@ -18,7 +18,6 @@ public class JobController {
 
     private final JobLauncher jobLauncher;
     private final Job job;
-
     public JobController(JobLauncher jobLauncher, Job job) {
         this.jobLauncher = jobLauncher;
         this.job = job;

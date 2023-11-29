@@ -1,8 +1,11 @@
 package dev.buga.springbatchexample.config;
 
 import dev.buga.springbatchexample.entity.Dwelling;
-import dev.buga.springbatchexample.entity.DwellingDTO;
+import dev.buga.springbatchexample.dto.DwellingDTO;
 import dev.buga.springbatchexample.repository.DwellingsRepository;
+import dev.buga.springbatchexample.utility.DwellingProcessor;
+import dev.buga.springbatchexample.utility.DwellingValidator;
+import dev.buga.springbatchexample.utility.FileMoveListener;
 import lombok.AllArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -15,6 +18,7 @@ import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.item.validator.ValidationException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
@@ -32,7 +36,7 @@ public class SpringBatchConfig {
     public FlatFileItemReader<DwellingDTO> reader() {
         FlatFileItemReader<DwellingDTO> itemReader = new FlatFileItemReader<>();
 
-        itemReader.setResource(new FileSystemResource("src/main/resources/dwellings2.csv"));
+        itemReader.setResource(new FileSystemResource("src/main/resources/dwellings4.csv"));
         itemReader.setName("csvReader");
         itemReader.setLinesToSkip(1);
         itemReader.setLineMapper(lineMapper());
@@ -60,7 +64,7 @@ public class SpringBatchConfig {
 
     @Bean
     public DwellingProcessor processor() {
-        return new DwellingProcessor();
+        return new DwellingProcessor(validator());
     }
 
     @Bean
@@ -76,19 +80,34 @@ public class SpringBatchConfig {
     @Bean
     public Step step1() {
         return new StepBuilder("csv-step", jobRepository)
-                .<DwellingDTO, Dwelling>chunk(10, transactionManager)
+                .<DwellingDTO, Dwelling>chunk(50, transactionManager)
                 .reader(reader())
                 .processor(processor())
                 .writer(writer())
+                .faultTolerant()
+                .skipPolicy((throwable, skipCount) -> {
+                    if (throwable instanceof ValidationException) {
+                        System.out.println(throwable);
+                        return true;
+                    }
+                    return false;
+                })
+                .skipLimit(10)
                 .build();
     }
 
     @Bean
-    public Job runJob() {
+    public Job runJob(FileMoveListener listener) {
         return new JobBuilder("importDwellings", jobRepository)
+                .listener(listener)
                 .flow(step1())
                 .end()
                 .build();
+    }
+
+    @Bean
+    public DwellingValidator validator() {
+        return new DwellingValidator();
     }
 
 }

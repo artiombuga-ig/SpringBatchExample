@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class DwellingInfo {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(name = "TOTAL_DWELLING_UNITS")
     private int total_dwellings;
@@ -29,4 +30,6 @@ public class DwellingInfo {
     private int retirement_villas;
     @Column(name = "TOWNHOUSE_FLATS_UNITS_OTHER")
     private int townhouses;
+    @OneToOne(mappedBy = "dwellingInfo")
+    private Dwelling dwelling;
 }
