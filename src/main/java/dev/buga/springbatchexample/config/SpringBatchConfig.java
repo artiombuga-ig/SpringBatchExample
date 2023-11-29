@@ -2,7 +2,10 @@ package dev.buga.springbatchexample.config;
 
 import dev.buga.springbatchexample.entity.Dwelling;
 import dev.buga.springbatchexample.dto.DwellingDTO;
+import dev.buga.springbatchexample.repository.DateEntityRepository;
+import dev.buga.springbatchexample.repository.DwellingInfoRepository;
 import dev.buga.springbatchexample.repository.DwellingsRepository;
+import dev.buga.springbatchexample.repository.SA2EntityRepository;
 import dev.buga.springbatchexample.utility.DwellingProcessor;
 import dev.buga.springbatchexample.utility.DwellingValidator;
 import dev.buga.springbatchexample.utility.FileMoveListener;
@@ -63,8 +66,8 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public DwellingProcessor processor() {
-        return new DwellingProcessor(validator());
+    public DwellingProcessor processor(DateEntityRepository dateEntityRepository, DwellingInfoRepository dwellingInfoRepository, SA2EntityRepository sa2EntityRepository) {
+        return new DwellingProcessor(validator(), dwellingInfoRepository, dateEntityRepository, sa2EntityRepository);
     }
 
     @Bean
@@ -78,11 +81,11 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public Step step1() {
+    public Step step1(DwellingProcessor processor) {
         return new StepBuilder("csv-step", jobRepository)
                 .<DwellingDTO, Dwelling>chunk(50, transactionManager)
                 .reader(reader())
-                .processor(processor())
+                .processor(processor)
                 .writer(writer())
                 .faultTolerant()
                 .skipPolicy((throwable, skipCount) -> {
@@ -97,10 +100,10 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public Job runJob(FileMoveListener listener) {
+    public Job runJob(FileMoveListener listener, Step step1) {
         return new JobBuilder("importDwellings", jobRepository)
                 .listener(listener)
-                .flow(step1())
+                .flow(step1)
                 .end()
                 .build();
     }

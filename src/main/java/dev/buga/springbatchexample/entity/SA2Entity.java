@@ -2,20 +2,26 @@ package dev.buga.springbatchexample.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "SA2_INFO")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class SA2Entity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +32,8 @@ public class SA2Entity {
     private String SA2_name;
     @Column(name = "TERRITORIAL_AUTHORITY")
     private String authority;
-    @OneToOne(mappedBy = "sa2Entity")
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "ID")
     private Dwelling dwelling;
 }
